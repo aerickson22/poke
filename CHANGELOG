@@ -1,0 +1,17 @@
+commit 42e242b293ac6045fa8d1cec53ebe0b06e218c44 (HEAD -> main)
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Mon May 18 08:20:43 2026 -0500
+
+    bug fixes
+
+commit 7fedce424d5c93a56152fb39a12141dc55db1bdb
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Mon May 18 08:19:15 2026 -0500
+
+    added gitignore
+
+commit 79149cdbf330d95378afb3b0ddbe93a200a46439
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Mon May 18 08:07:59 2026 -0500
+
+    init commit
