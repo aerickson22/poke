@@ -211,6 +211,16 @@ char biome(double elevation, double moisture) {
     return BOULDER;
 }
 
+void _draw_borders(struct map_t* in){
+    for (int i = 0; i < MAP_MAX_Y; i++) {
+        for (int j = 0; j < MAP_MAX_X; j++) {
+            if(!i || !j || i == (MAP_MAX_Y - 1) || j == (MAP_MAX_X - 1)){
+                in->data[i][j].terrian = BOULDER;
+            }
+        }
+    }
+}
+
 int map_generation(struct map_t* in) {
     int* perms;
     if (!(perms = _permutations())){
@@ -233,6 +243,7 @@ int map_generation(struct map_t* in) {
     }
     free(perms);
     free(perms2);
+    _draw_borders(in);
     return SUCCESS;
 }
 
