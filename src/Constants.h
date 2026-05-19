@@ -34,8 +34,6 @@
 /** @brief Size of the permutation table used by the noise function (2^8). */
 #define NUM_PERMS            256
 
-#define NUM_NEIGHBORS 8
-
 /** @brief Path / road tile. */
 #define PATH            '#'
 
@@ -96,6 +94,9 @@ typedef struct Tile {
     int  x;        /**< Column index of the tile (0-based). */
     int  y;        /**< Row index of the tile (0-based).    */
     char terrain;  /**< Terrain character (see render-character constants). */
+    int distances;
+    struct Tile* predcessors;
+    int visted;
 } Tile;
 
 #endif /* CONSTANTS_H */

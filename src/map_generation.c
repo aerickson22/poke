@@ -46,7 +46,10 @@ struct map_t* map_init() {
         for (int j = 0; j < MAP_MAX_X; j++) {
             out->data[i][j].x = j;
             out->data[i][j].y = i;
+            out->data[i][j].distances = INT_MAX;
+            out->data[i][j].predcessors = NULL;
             out->data[i][j].terrain = BLANK;
+            out->data[i][j].visted = 0;
         }
     }
 
@@ -222,45 +225,186 @@ void _draw_borders(struct map_t* in){
     }
 }
 
-int _draw_path(struct map_t* in){
-    int x = (rand() % (MAP_MAX_X - 3)) + 3;
-    int y = (rand() % (MAP_MAX_Y - 3)) + 3;
-    int curl_factor;
-    Tile* seed = &in->data[y][x];
-    seed->terrain = PATH;
-    for(int i = 0; i < MAP_MAX_X; i++){
-        in->data[y][i].terrain = PATH;
-        curl_factor = rand() % 100;
-        if(curl_factor > 65){
-            y++;
-            in->data[y][i].terrain = PATH;
-        } else if(curl_factor > 20 && curl_factor <= 65){
-            y--;
-            in->data[y][i].terrain = PATH;
-        }
-        if(y == MAP_MAX_Y - 1){
-            y--;
-        }else if(y == 1){
-            y++;
-        }
-    }
+int _compare_tiles(void* t1, void* t2){
+    return (*(Tile**)t1)->distances - (*(Tile**)t2)->distances;
+}
 
-    for(int j = 0; j < MAP_MAX_Y; j++){
-        in->data[j][x].terrain = PATH;
-        curl_factor = rand() % 100;
-        if(curl_factor > 65){
-            x++;
-            in->data[j][x].terrain = PATH;
-        } else if(curl_factor > 20 && curl_factor <= 65){
-            x--;
-            in->data[j][x].terrain = PATH;
-        }
-        if(x == MAP_MAX_X - 1){
-            x--;
-        }else if(x == 1){
-            x++;
+int _distance_to(char dest){
+    switch(dest){
+        case PATH:
+        case POKEMARTS:
+        case POKEMON_CENTER:
+        case SHORT_GRASS:
+            return 10;
+        case TALL_GRASS:
+            return 20;
+        case TREE:
+            return 50;
+        case BOULDER:
+            return INT_MAX;
+        case WATER:
+            return 80;
+        default:
+            return 15;
+    }
+}
+
+void _thicken_paths(struct map_t* in) {
+    int is_path[MAP_MAX_Y][MAP_MAX_X] = {0};
+    for (int y = 0; y < MAP_MAX_Y; y++) {
+        for (int x = 0; x < MAP_MAX_X; x++) {
+            if (in->data[y][x].terrain == PATH) {
+                is_path[y][x] = 1;
+            }
         }
     }
+    for (int y = 1; y < MAP_MAX_Y - 1; y++) {
+        for (int x = 1; x < MAP_MAX_X - 1; x++) {
+            if (is_path[y][x]) {
+                if (in->data[y+1][x].terrain != BOULDER && in->data[y+1][x].terrain != WATER)
+                    in->data[y+1][x].terrain = PATH;
+                if (in->data[y-1][x].terrain != BOULDER && in->data[y-1][x].terrain != WATER)
+                    in->data[y-1][x].terrain = PATH;
+                if (in->data[y][x+1].terrain != BOULDER && in->data[y][x+1].terrain != WATER)
+                    in->data[y][x+1].terrain = PATH;
+                if (in->data[y][x-1].terrain != BOULDER && in->data[y][x-1].terrain != WATER)
+                    in->data[y][x-1].terrain = PATH;
+            }
+        }
+    }
+}
+
+int  _draw_vertical(struct map_t* in){
+    int start = (rand() % (MAP_MAX_X - 3)) + 3;
+    Tile* src = &in->data[MAP_MAX_Y - 1][start];
+    src->distances = 0;
+    src->terrain = PATH;
+    Tile* dest = &in->data[0][start];
+    dest->terrain = PATH;
+    minheap_t* tiles;
+    int dx[8] = {-1,  0,  1, -1, 1, -1, 0, 1};
+    int dy[8] = {-1, -1, -1,  0, 0,  1, 1, 1};
+    if(!(tiles = minheap_init(sizeof(src)))){
+        return ERROR;
+    }
+    if(minheap_insert(&src, tiles, _compare_tiles) < 0){
+        minheap_destroy(tiles);
+        return ERROR;
+    }
+    while (!minheap_is_empty(tiles)) {
+        if (!(src = *(Tile**)minheap_remove(tiles, _compare_tiles))) {
+            minheap_destroy(tiles);
+            return ERROR;
+        }
+        src->visted = 1;
+
+        if (src->x == dest->x && src->y == dest->y) {
+            while(src->predcessors){
+                src->terrain = PATH;
+                src = src->predcessors;
+            }
+            minheap_destroy(tiles);
+            return SUCCESS;
+        }
+        for (int i = 0; i < 8; i++) {
+            if (!(src->y + dy[i] < 0 || src->y + dy[i] >= MAP_MAX_Y ||
+                src->x + dx[i] < 0 || src->x + dx[i] >= MAP_MAX_X ||
+                in->data[src->y + dy[i]][src->x + dx[i]].visted)) {
+                Tile* neighbor = &in->data[src->y + dy[i]][src->x + dx[i]];
+                int dist = _distance_to(neighbor->terrain);
+                if (dist != INT_MAX) {
+                    int new_dist = src->distances + dist;
+                    if (new_dist < neighbor->distances) {
+                        neighbor->distances = new_dist;
+                        neighbor->predcessors = src;
+                        if (minheap_insert(&neighbor, tiles, _compare_tiles) < 0) {
+                            minheap_destroy(tiles);
+                            return ERROR;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    minheap_destroy(tiles);
+    return SUCCESS;
+}
+
+int _draw_horizontal(struct map_t* in){
+    int start = (rand() % (MAP_MAX_Y - 3)) + 3;
+    Tile* src = &in->data[start][0];
+    src->distances = 0;
+    src->terrain = PATH;
+    Tile* dest = &in->data[start][MAP_MAX_X - 1];
+    dest->terrain = PATH;
+    minheap_t* tiles;
+    int dx[8] = {-1,  0,  1, -1, 1, -1, 0, 1};
+    int dy[8] = {-1, -1, -1,  0, 0,  1, 1, 1};
+    if(!(tiles = minheap_init(sizeof(src)))){
+        return ERROR;
+    }
+    if(minheap_insert(&src, tiles, _compare_tiles) < 0){
+        minheap_destroy(tiles);
+        return ERROR;
+    }
+    while (!minheap_is_empty(tiles)) {
+        if (!(src = *(Tile**)minheap_remove(tiles, _compare_tiles))) {
+            minheap_destroy(tiles);
+            return ERROR;
+        }
+        src->visted = 1;
+
+        if (src->x == dest->x && src->y == dest->y) {
+            while(src->predcessors){
+                src->terrain = PATH;
+                src = src->predcessors;
+            }
+            minheap_destroy(tiles);
+            return SUCCESS;
+        }
+        for (int i = 0; i < 8; i++) {
+            if (!(src->y + dy[i] < 0 || src->y + dy[i] >= MAP_MAX_Y ||
+                src->x + dx[i] < 0 || src->x + dx[i] >= MAP_MAX_X ||
+                in->data[src->y + dy[i]][src->x + dx[i]].visted)) {
+                Tile* neighbor = &in->data[src->y + dy[i]][src->x + dx[i]];
+                int dist = _distance_to(neighbor->terrain);
+                if (dist != INT_MAX) {
+                    int new_dist = src->distances + dist;
+                    if (new_dist < neighbor->distances) {
+                        neighbor->distances = new_dist;
+                        neighbor->predcessors = src;
+                        if (minheap_insert(&neighbor, tiles, _compare_tiles) < 0) {
+                            minheap_destroy(tiles);
+                            return ERROR;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    minheap_destroy(tiles);
+    return SUCCESS;
+}
+
+void _reset_tiles(struct map_t* in) {
+    for (int y = 0; y < MAP_MAX_Y; y++) {
+        for (int x = 0; x < MAP_MAX_X; x++) {
+            in->data[y][x].visted = 0;
+            in->data[y][x].distances = INT_MAX;
+            in->data[y][x].predcessors = NULL;
+        }
+    }
+}
+
+int _draw_paths(struct map_t* in) {
+    if (_draw_vertical(in) < 0){
+        return ERROR;
+    }
+    _reset_tiles(in);
+    if (_draw_horizontal(in) < 0){
+        return ERROR;
+    }
+    _thicken_paths(in);
     return SUCCESS;
 }
 
@@ -287,7 +431,7 @@ int map_generation(struct map_t* in) {
     free(perms);
     free(perms2);
     _draw_borders(in);
-    _draw_path(in);
+    _draw_paths(in);
     return SUCCESS;
 }
 
