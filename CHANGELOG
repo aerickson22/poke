@@ -1,4 +1,42 @@
-commit 42e242b293ac6045fa8d1cec53ebe0b06e218c44 (HEAD -> main)
+commit ac9de12a9a92da2c72129fb198571e4dacdcd6e5 (HEAD -> 1-implement-map-generation, origin/1-implement-map-generation)
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Mon May 18 20:19:51 2026 -0500
+
+    added border and documentaion in header files
+
+commit aa15ddc0f1e9152b8e74003b7f0833abf130821b
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Mon May 18 20:05:53 2026 -0500
+
+    genereate terrain regions
+
+commit 666a58b693ceace83117d89907d9add9b5352066 (origin/main, main)
+Merge: 4fee646 d3fdb97
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Mon May 18 10:57:14 2026 -0500
+
+    Merge branch 'main' of https://github.com/aerickson22/poke
+    merge main
+
+commit 4fee6469ac9d8a087d5f5ff796ebf334e484df21
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Mon May 18 10:55:24 2026 -0500
+
+    map intialization, deletion, and displayingh funcs implemented
+
+commit d3fdb97afe0fa5324eec020070eae1d8bd363641
+Author: aerickson22 <aerick22@iastate.edu>
+Date:   Mon May 18 08:23:18 2026 -0500
+
+    Delete spec_sheets directory
+
+commit 28f4a82d9249509ab93800aa098d869e43f358c6
+Author: aerickson22 <aerick22@iastate.edu>
+Date:   Mon May 18 08:23:08 2026 -0500
+
+    Delete db directory
+
+commit 42e242b293ac6045fa8d1cec53ebe0b06e218c44
 Author: Alex Erickson <aerick22@iastate.edu>
 Date:   Mon May 18 08:20:43 2026 -0500
 

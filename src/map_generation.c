@@ -6,7 +6,6 @@
 
 #include "map_generation.h"
 #include "Constants.h"
-#include "queue.h"
 
 struct vec{
     double x;
@@ -43,16 +42,16 @@ struct map_t* map_init() {
     }
     for (int i = 0; i < MAP_MAX_Y; i++) {
         for (int j = 0; j < MAP_MAX_X; j++) {
-            out->data[i][j].x       = j;
-            out->data[i][j].y       = i;
-            out->data[i][j].terrian = BLANK;
+            out->data[i][j].x = j;
+            out->data[i][j].y = i;
+            out->data[i][j].terrain = BLANK;
         }
     }
 
     return out;
 }
 
-int map_destory(struct map_t* in){
+int map_destroy(struct map_t* in){
     for(int i = 0; i < MAP_MAX_Y; i++){
         free(in->data[i]);
     }
@@ -65,49 +64,49 @@ int map_destory(struct map_t* in){
 void map_display(struct map_t* in){
     for(int i = 0; i < MAP_MAX_Y; i++){
         for(int j = 0; j < MAP_MAX_X; j++){
-            switch(in->data[i][j].terrian){
+            switch(in->data[i][j].terrain){
                 case BOULDER:
                     attron(COLOR_PAIR(COLOR_BOULDER));
-                    mvaddch(i + 1, j, in->data[i][j].terrian);
+                    mvaddch(i + 1, j, in->data[i][j].terrain);
                     attroff(COLOR_PAIR(COLOR_BOULDER));
                     break;
                 case TREE:
                     attron(COLOR_PAIR(COLOR_TREE) | A_BOLD);
-                    mvaddch(i + 1, j, in->data[i][j].terrian);
+                    mvaddch(i + 1, j, in->data[i][j].terrain);
                     attroff(COLOR_PAIR(COLOR_TREE) | A_BOLD);
                     break;
                 case POKEMON_CENTER:
                     attron(COLOR_PAIR(COLOR_POKE_CENTER) | A_BOLD);
-                    mvaddch(i + 1, j, in->data[i][j].terrian);
+                    mvaddch(i + 1, j, in->data[i][j].terrain);
                     attroff(COLOR_PAIR(COLOR_POKE_CENTER) | A_BOLD);
                     break;
                 case POKEMARTS:
                     attron(COLOR_PAIR(COLOR_POKE_MART) | A_BOLD);
-                    mvaddch(i + 1, j, in->data[i][j].terrian);
+                    mvaddch(i + 1, j, in->data[i][j].terrain);
                     attroff(COLOR_PAIR(COLOR_POKE_MART) | A_BOLD);
                     break;
                 case TALL_GRASS:
                     attron(COLOR_PAIR(COLOR_LONG_GRASS));
-                    mvaddch(i + 1, j, in->data[i][j].terrian);
+                    mvaddch(i + 1, j, in->data[i][j].terrain);
                     attroff(COLOR_PAIR(COLOR_LONG_GRASS));
                     break;
                 case SHORT_GRASS:
                     attron(COLOR_PAIR(COLOR_CLEARING) | A_BOLD);
-                    mvaddch(i + 1, j, in->data[i][j].terrian);
+                    mvaddch(i + 1, j, in->data[i][j].terrain);
                     attroff(COLOR_PAIR(COLOR_CLEARING) | A_BOLD);
                     break;
                 case PATH:
                     attron(COLOR_PAIR(COLOR_PATH) | A_BOLD);
-                    mvaddch(i + 1, j, in->data[i][j].terrian);
+                    mvaddch(i + 1, j, in->data[i][j].terrain);
                     attroff(COLOR_PAIR(COLOR_PATH) | A_BOLD);
                     break;
                 case WATER:
                     attron(COLOR_PAIR(COLOR_TILDES) | A_BOLD);
-                    mvaddch(i + 1, j, in->data[i][j].terrian);
+                    mvaddch(i + 1, j, in->data[i][j].terrain);
                     attroff(COLOR_PAIR(COLOR_TILDES) | A_BOLD);
                     break;
                 default:
-                    mvaddch(i + 1, j, in->data[i][j].terrian);
+                    mvaddch(i + 1, j, in->data[i][j].terrain);
                     break;
             }
         }
@@ -215,7 +214,7 @@ void _draw_borders(struct map_t* in){
     for (int i = 0; i < MAP_MAX_Y; i++) {
         for (int j = 0; j < MAP_MAX_X; j++) {
             if(!i || !j || i == (MAP_MAX_Y - 1) || j == (MAP_MAX_X - 1)){
-                in->data[i][j].terrian = BOULDER;
+                in->data[i][j].terrain = BOULDER;
             }
         }
     }
@@ -238,7 +237,7 @@ int map_generation(struct map_t* in) {
                     + 0.5 * _noise(perms2, j * 0.15, i * 0.15);
             e = (e + 1.5) / 3.0;
             m = (m + 1.5) / 3.0;
-            in->data[i][j].terrian = biome(e, m);
+            in->data[i][j].terrain = biome(e, m);
         }
     }
     free(perms);
