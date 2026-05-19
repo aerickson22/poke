@@ -251,6 +251,9 @@ int _distance_to(char dest){
 
 void _thicken_paths(struct map_t* in) {
     int is_path[MAP_MAX_Y][MAP_MAX_X] = {0};
+    int placed_mart = 0;
+    int placed_center = 0;
+
     for (int y = 0; y < MAP_MAX_Y; y++) {
         for (int x = 0; x < MAP_MAX_X; x++) {
             if (in->data[y][x].terrain == PATH) {
@@ -270,6 +273,30 @@ void _thicken_paths(struct map_t* in) {
                 if (in->data[y][x-1].terrain != BOULDER && in->data[y][x-1].terrain != WATER)
                     in->data[y][x-1].terrain = PATH;
             }
+        }
+    }
+
+    for (int y = 1; y < MAP_MAX_Y - 1; y++) {
+        for (int x = 1; x < MAP_MAX_X - 1; x++) {
+            if (is_path[y][x] && !placed_mart && rand() % 100 < 5) {
+                if (y + 2 < MAP_MAX_Y - 1 && x + 2 < MAP_MAX_X - 1) {
+                    in->data[y][x+1].terrain = POKEMARTS;
+                    in->data[y][x+2].terrain = POKEMARTS;
+                    in->data[y+1][x+1].terrain = POKEMARTS;
+                    in->data[y+1][x+2].terrain = POKEMARTS;
+                    placed_mart = 1;
+                }
+            }
+            if (is_path[y][x] && !placed_center && rand() % 100 < 5) {
+                if (y + 2 < MAP_MAX_Y - 1 && x - 2 > 0) {
+                    in->data[y][x-1].terrain = POKEMON_CENTER;
+                    in->data[y][x-2].terrain = POKEMON_CENTER;
+                    in->data[y+1][x-1].terrain = POKEMON_CENTER;
+                    in->data[y+1][x-2].terrain = POKEMON_CENTER;
+                    placed_center = 1;
+                }
+            }
+            if (placed_mart && placed_center) break;
         }
     }
 }
