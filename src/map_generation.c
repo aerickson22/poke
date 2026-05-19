@@ -3,9 +3,11 @@
 #include <ncurses.h>
 #include <time.h>
 #include <math.h>
+#include <limits.h>
 
 #include "map_generation.h"
 #include "Constants.h"
+#include "minheap.h"
 
 struct vec{
     double x;
@@ -220,6 +222,48 @@ void _draw_borders(struct map_t* in){
     }
 }
 
+int _draw_path(struct map_t* in){
+    int x = (rand() % (MAP_MAX_X - 3)) + 3;
+    int y = (rand() % (MAP_MAX_Y - 3)) + 3;
+    int curl_factor;
+    Tile* seed = &in->data[y][x];
+    seed->terrain = PATH;
+    for(int i = 0; i < MAP_MAX_X; i++){
+        in->data[y][i].terrain = PATH;
+        curl_factor = rand() % 100;
+        if(curl_factor > 65){
+            y++;
+            in->data[y][i].terrain = PATH;
+        } else if(curl_factor > 20 && curl_factor <= 65){
+            y--;
+            in->data[y][i].terrain = PATH;
+        }
+        if(y == MAP_MAX_Y - 1){
+            y--;
+        }else if(y == 1){
+            y++;
+        }
+    }
+
+    for(int j = 0; j < MAP_MAX_Y; j++){
+        in->data[j][x].terrain = PATH;
+        curl_factor = rand() % 100;
+        if(curl_factor > 65){
+            x++;
+            in->data[j][x].terrain = PATH;
+        } else if(curl_factor > 20 && curl_factor <= 65){
+            x--;
+            in->data[j][x].terrain = PATH;
+        }
+        if(x == MAP_MAX_X - 1){
+            x--;
+        }else if(x == 1){
+            x++;
+        }
+    }
+    return SUCCESS;
+}
+
 int map_generation(struct map_t* in) {
     int* perms;
     if (!(perms = _permutations())){
@@ -243,6 +287,7 @@ int map_generation(struct map_t* in) {
     free(perms);
     free(perms2);
     _draw_borders(in);
+    _draw_path(in);
     return SUCCESS;
 }
 

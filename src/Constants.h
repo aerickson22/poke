@@ -34,6 +34,8 @@
 /** @brief Size of the permutation table used by the noise function (2^8). */
 #define NUM_PERMS            256
 
+#define NUM_NEIGHBORS 8
+
 /** @brief Path / road tile. */
 #define PATH            '#'
 

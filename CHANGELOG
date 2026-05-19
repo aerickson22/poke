@@ -1,3 +1,9 @@
+commit d8c87cb71b98a112cd9362309614622bed0cb6ca (HEAD -> 1-implement-map-generation, origin/1-implement-map-generation)
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Mon May 18 22:10:11 2026 -0500
+
+    added generic minheap
+
 commit ac9de12a9a92da2c72129fb198571e4dacdcd6e5 (HEAD -> 1-implement-map-generation, origin/1-implement-map-generation)
 Author: Alex Erickson <aerick22@iastate.edu>
 Date:   Mon May 18 20:19:51 2026 -0500
