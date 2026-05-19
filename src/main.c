@@ -28,10 +28,10 @@ int main(){
         fprintf(stderr, "ERROR: MAP INIT FAILED\n");
         return ERROR;
     }
-
+    map_generation(map);
     map_display(map);
     while(getch() != 27);
-
+    map_destroy(map);
     endwin();
     return 0;
 }
