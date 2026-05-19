@@ -11,6 +11,8 @@
 #define POKEMON_STORE_X_SIZE 2
 #define POKEMON_STORE_Y_SIZE 2
 #define NUMBER_OF_EXITS 4
+#define NUMBER_OF_TERRIANS 7
+#define NUM_PERMS 256
 
 //Rendering characters for screen
 #define PATH '#'
@@ -21,6 +23,7 @@
 #define BOULDER '%'
 #define SHORT_GRASS '.'
 #define TREE '^'
+#define BLANK ' '
 
 //Ncurses
 #define COLOR_BOULDER 1
@@ -33,9 +36,10 @@
 #define COLOR_TILDES 8
 
 //data structures
-typedef struct map_point_t{
+typedef struct Tile{
     int x;
     int y;
-}map_point_t;
+    char terrian;
+}Tile;
 
 #endif

@@ -10,5 +10,6 @@ void map_display(map_t*);
 map_t* map_init();
 //destory a map_t
 int map_destory(map_t*);
-
+//create map terrian
+int map_generation(struct map_t* in);
 #endif

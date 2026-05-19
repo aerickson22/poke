@@ -13,7 +13,7 @@ SRCS    = $(wildcard $(SRC_DIR)/*.c)
 OBJS    = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # ncurses library
-LIBS    = -lncurses
+LIBS    = -lncurses -lm
 
 # Default target
 all: $(TARGET)
