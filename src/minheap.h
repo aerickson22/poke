@@ -1,6 +1,7 @@
 #ifndef MINHEAP_H
 #define MINHEAP_H
 
+#include <stdio.h>
 #include <stddef.h>
 
 /**

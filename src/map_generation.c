@@ -301,68 +301,9 @@ void _thicken_paths(struct map_t* in) {
     }
 }
 
-int  _draw_vertical(struct map_t* in){
-    int start = (rand() % (MAP_MAX_X - 3)) + 3;
-    Tile* src = &in->data[MAP_MAX_Y - 1][start];
+int _dijkstra_pathing(struct map_t* in, Tile* src, Tile* dest){
     src->distances = 0;
     src->terrain = PATH;
-    Tile* dest = &in->data[0][start];
-    dest->terrain = PATH;
-    minheap_t* tiles;
-    int dx[8] = {-1,  0,  1, -1, 1, -1, 0, 1};
-    int dy[8] = {-1, -1, -1,  0, 0,  1, 1, 1};
-    if(!(tiles = minheap_init(sizeof(src)))){
-        return ERROR;
-    }
-    if(minheap_insert(&src, tiles, _compare_tiles) < 0){
-        minheap_destroy(tiles);
-        return ERROR;
-    }
-    while (!minheap_is_empty(tiles)) {
-        if (!(src = *(Tile**)minheap_remove(tiles, _compare_tiles))) {
-            minheap_destroy(tiles);
-            return ERROR;
-        }
-        src->visted = 1;
-
-        if (src->x == dest->x && src->y == dest->y) {
-            while(src->predcessors){
-                src->terrain = PATH;
-                src = src->predcessors;
-            }
-            minheap_destroy(tiles);
-            return SUCCESS;
-        }
-        for (int i = 0; i < 8; i++) {
-            if (!(src->y + dy[i] < 0 || src->y + dy[i] >= MAP_MAX_Y ||
-                src->x + dx[i] < 0 || src->x + dx[i] >= MAP_MAX_X ||
-                in->data[src->y + dy[i]][src->x + dx[i]].visted)) {
-                Tile* neighbor = &in->data[src->y + dy[i]][src->x + dx[i]];
-                int dist = _distance_to(neighbor->terrain);
-                if (dist != INT_MAX) {
-                    int new_dist = src->distances + dist;
-                    if (new_dist < neighbor->distances) {
-                        neighbor->distances = new_dist;
-                        neighbor->predcessors = src;
-                        if (minheap_insert(&neighbor, tiles, _compare_tiles) < 0) {
-                            minheap_destroy(tiles);
-                            return ERROR;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    minheap_destroy(tiles);
-    return SUCCESS;
-}
-
-int _draw_horizontal(struct map_t* in){
-    int start = (rand() % (MAP_MAX_Y - 3)) + 3;
-    Tile* src = &in->data[start][0];
-    src->distances = 0;
-    src->terrain = PATH;
-    Tile* dest = &in->data[start][MAP_MAX_X - 1];
     dest->terrain = PATH;
     minheap_t* tiles;
     int dx[8] = {-1,  0,  1, -1, 1, -1, 0, 1};
@@ -423,12 +364,39 @@ void _reset_tiles(struct map_t* in) {
     }
 }
 
-int _draw_paths(struct map_t* in) {
-    if (_draw_vertical(in) < 0){
+int _draw_paths(struct map_t* in, Tile* start_x, Tile* start_y) {
+    int rand_x = (rand() % (MAP_MAX_X - 3)) + 3;
+    int rand_y = (rand() % (MAP_MAX_Y - 3)) + 3;
+    Tile* ver_src, *ver_dest, *hor_src, *hor_dest;
+    if(!start_x && start_y){
+        ver_src = &in->data[0][rand_x];
+        ver_dest = &in->data[MAP_MAX_Y - 1][rand_x];
+        hor_src = start_x;
+        if(start_x->x <= 0){
+            hor_dest = &in->data[rand_y][MAP_MAX_X - 1];
+        }else{
+            hor_dest = &in->data[rand_y][0];
+        }
+    }else if(start_x && !start_y){
+        hor_src = &in->data[rand_y][0];
+        hor_dest = &in->data[rand_y][MAP_MAX_X - 1];
+        ver_src = start_y;
+        if(start_y->y <= 0){
+            ver_dest = &in->data[MAP_MAX_Y][rand_x];
+        }else{
+            ver_dest = &in->data[0][rand_x];
+        }
+    }else if(!start_x && !start_y){
+        ver_src = &in->data[0][rand_x];
+        ver_dest = &in->data[MAP_MAX_Y - 1][rand_x];
+        hor_src = &in->data[rand_y][0];
+        hor_dest = &in->data[rand_y][MAP_MAX_X - 1];
+    }
+    if (_dijkstra_pathing(in, ver_src, ver_dest) < 0){
         return ERROR;
     }
     _reset_tiles(in);
-    if (_draw_horizontal(in) < 0){
+    if (_dijkstra_pathing(in, hor_src, hor_dest) < 0){
         return ERROR;
     }
     _thicken_paths(in);
@@ -458,7 +426,7 @@ int map_generation(struct map_t* in) {
     free(perms);
     free(perms2);
     _draw_borders(in);
-    _draw_paths(in);
+    _draw_paths(in, NULL, NULL);
     return SUCCESS;
 }
 
