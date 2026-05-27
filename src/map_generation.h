@@ -14,9 +14,9 @@
  * The internal layout of map_t is hidden from callers. Interact with it
  * exclusively through the functions declared in this header.
  */
-typedef struct map_t{
-    Tile** data;
-}map_t;
+typedef struct map_t {
+    Tile** data; /**< 2D grid matrix storing the layout of individual game tiles. */
+} map_t;
 
 /**
  * @brief Renders the map to the terminal using ncurses.
@@ -43,7 +43,7 @@ map_t* map_init();
  *
  * @param map  Pointer to the map to destroy. Must not be NULL.
  * @return     SUCCESS (0) on success, ERROR (-1) if @p map is NULL or
- *             an internal error occurs.
+ * an internal error occurs.
  */
 int map_destroy(map_t* map);
 
@@ -54,11 +54,20 @@ int map_destroy(map_t* map);
  * paths, etc.) using the map-generation algorithm. The map must have been
  * created with map_init() before calling this function.
  *
- * @param in   Pointer to an initialised map to populate. Must not be NULL.
- * @return     SUCCESS (0) on success, ERROR (-1) on failure.
+ * @param in       Pointer to an initialised map to populate. Must not be NULL.
+ * @param exit_x   Pointer to the primary tile defining the horizontal entry exit constraints.
+ * @param exit_y   Pointer to the primary tile defining the vertical entry exit constraints.
+ * @return         SUCCESS (0) on success, ERROR (-1) on failure.
  */
 int map_generation(map_t* in, Tile* exit_x, Tile* exit_y);
 
+/**
+ * @brief Retrieves the exit gate tile corresponding to a designated cardinal direction.
+ *
+ * @param in        Pointer to the map to query. Must not be NULL.
+ * @param direction Cardinal direction index representing North, South, East, or West.
+ * @return          Pointer to the requested gate Tile, or NULL if invalid or not found.
+ */
 Tile* map_get_exit(map_t* in, int direction);
 
 #endif /* MAP_GENERATION_H */
