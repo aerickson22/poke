@@ -311,9 +311,7 @@ int _dijkstra_pathing(map_t* in, Tile* src, Tile* dest){
         }
         src = *(Tile**)removed;
         free(removed);
-
         src->visted = 1;
-
         if (src->x == dest->x && src->y == dest->y) {
             while(src->predcessors){
                 src->terrain = PATH;
@@ -359,31 +357,34 @@ void _reset_tiles(map_t* in) {
 int _draw_paths(map_t* in, Tile* start_x, Tile* start_y) {
     int rand_x = (rand() % (MAP_MAX_X - 3)) + 3;
     int rand_y = (rand() % (MAP_MAX_Y - 3)) + 3;
-    Tile* ver_src, *ver_dest, *hor_src, *hor_dest;
-    if(!start_x && start_y){
-        ver_src = &in->data[0][rand_x];
-        ver_dest = &in->data[MAP_MAX_Y - 1][rand_x];
-        hor_src = start_x;
-        if(start_x->x <= 0){
-            hor_dest = &in->data[rand_y][MAP_MAX_X - 1];
-        }else{
-            hor_dest = &in->data[rand_y][0];
-        }
-    }else if(start_x && !start_y){
-        hor_src = &in->data[rand_y][0];
-        hor_dest = &in->data[rand_y][MAP_MAX_X - 1];
-        ver_src = start_y;
-        if(start_y->y <= 0){
-            ver_dest = &in->data[MAP_MAX_Y][rand_x];
-        }else{
+    Tile* ver_src = NULL, *ver_dest = NULL, *hor_src = NULL, *hor_dest = NULL;
+
+    if (start_y) {
+        if (start_y->y == 0) {
+            ver_src = &in->data[MAP_MAX_Y - 1][start_y->x];
             ver_dest = &in->data[0][rand_x];
+        } else {
+            ver_src = &in->data[0][start_y->x];
+            ver_dest = &in->data[MAP_MAX_Y - 1][rand_x];
         }
-    }else if(!start_x && !start_y){
+    } else {
         ver_src = &in->data[0][rand_x];
         ver_dest = &in->data[MAP_MAX_Y - 1][rand_x];
+    }
+
+    if (start_x) {
+        if (start_x->x == 0) {
+            hor_src = &in->data[start_x->y][MAP_MAX_X - 1];
+            hor_dest = &in->data[rand_y][0];
+        } else {
+            hor_src = &in->data[start_x->y][0];
+            hor_dest = &in->data[rand_y][MAP_MAX_X - 1];
+        }
+    } else {
         hor_src = &in->data[rand_y][0];
         hor_dest = &in->data[rand_y][MAP_MAX_X - 1];
     }
+
     if (_dijkstra_pathing(in, ver_src, ver_dest) < 0){
         return ERROR;
     }
@@ -395,7 +396,41 @@ int _draw_paths(map_t* in, Tile* start_x, Tile* start_y) {
     return SUCCESS;
 }
 
-int map_generation(map_t* in) {
+Tile* map_get_exit(map_t* in, int direction){
+    switch(direction){
+        case 'n':
+            for(int i = 0; i < MAP_MAX_X; i++){
+                if(in->data[0][i].terrain == PATH){
+                    return &in->data[0][i];
+                }
+            }
+            break;
+        case 's':
+            for(int i = 0; i < MAP_MAX_X; i++){
+                if(in->data[MAP_MAX_Y - 1][i].terrain == PATH){
+                    return &in->data[MAP_MAX_Y - 1][i];
+                }
+            }
+            break;
+        case 'e':
+            for(int i = 0; i < MAP_MAX_Y; i++){
+                if(in->data[i][MAP_MAX_X - 1].terrain == PATH){
+                    return &in->data[i][MAP_MAX_X - 1];
+                }
+            }
+            break;
+        case 'w':
+            for(int i = 0; i < MAP_MAX_Y; i++){
+                if(in->data[i][0].terrain == PATH){
+                    return &in->data[i][0];
+                }
+            }
+            break;
+    }
+    return NULL;
+}
+
+int map_generation(map_t* in, Tile* exit_x, Tile* exit_y) {
     int* perms;
     if (!(perms = _permutations())){
         return ERROR;
@@ -418,7 +453,7 @@ int map_generation(map_t* in) {
     free(perms);
     free(perms2);
     _draw_borders(in);
-    _draw_paths(in, NULL, NULL);
+    _draw_paths(in, exit_x, exit_y);
     return SUCCESS;
 }
 

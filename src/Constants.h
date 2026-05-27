@@ -19,8 +19,8 @@
 /** @brief Maximum number of rows in the map grid. */
 #define MAP_MAX_Y             21
 
-#define WORLD_MAX_X 400
-#define WORLD_MAX_Y 400
+#define WORLD_MAX_X 401
+#define WORLD_MAX_Y 401
 
 /** @brief Width in tiles of a Pokémon Center or Poké Mart building. */
 #define POKEMON_STORE_X_SIZE   2
@@ -87,6 +87,8 @@
 
 /** @brief Color pair for water tiles. */
 #define COLOR_TILDES      8
+
+#define FLY_COMMAND_MESSAGE "Fly to (x y)? "
 
 /**
  * @brief Represents a single tile on the map.

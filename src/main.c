@@ -28,9 +28,33 @@ int main(){
         fprintf(stderr, "ERROR: WORLD INIT FAILED\n");
         return ERROR;
     }
-    world_display_current_map(world);
-    while(getch() != 27);
-    world_destroy(world);
+    world_display_current_map(world, 'N');
+    int choice;
+    char direction = 'N';
+    int running_game = 1;
+    while(running_game){
+        choice = getch();
+        switch(choice){
+            case KEY_UP:
+                direction = 'N';
+                break;
+            case KEY_DOWN:
+                direction = 'S';
+                break;
+            case KEY_LEFT:
+                direction = 'W';
+                break;
+            case KEY_RIGHT:
+                direction = 'E';
+                break;
+        }
+        if(world_move_map(world, choice) >= 0){
+            world_display_current_map(world, direction);
+        }else{
+            running_game = 0;
+            world_destroy(world);
+        }
+    }
     endwin();
     return 0;
 }

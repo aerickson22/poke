@@ -57,6 +57,8 @@ int map_destroy(map_t* map);
  * @param in   Pointer to an initialised map to populate. Must not be NULL.
  * @return     SUCCESS (0) on success, ERROR (-1) on failure.
  */
-int map_generation(map_t* in);
+int map_generation(map_t* in, Tile* exit_x, Tile* exit_y);
+
+Tile* map_get_exit(map_t* in, int direction);
 
 #endif /* MAP_GENERATION_H */
