@@ -2,9 +2,9 @@
 #define CONSTANTS_H
 
 /**
- * @file constants.h
+ * @file Constants.h
  * @brief Project-wide constants, render characters, ncurses color IDs, and
- *        shared data structures.
+ * shared data structures.
  */
 
 /** @brief Returned by functions to signal an unrecoverable error. */
@@ -18,6 +18,12 @@
 
 /** @brief Maximum number of rows in the map grid. */
 #define MAP_MAX_Y             21
+
+/** @brief Maximum width of the world grid in maps. */
+#define WORLD_MAX_X 401
+
+/** @brief Maximum height of the world grid in maps. */
+#define WORLD_MAX_Y 401
 
 /** @brief Width in tiles of a Pokémon Center or Poké Mart building. */
 #define POKEMON_STORE_X_SIZE   2
@@ -85,18 +91,22 @@
 /** @brief Color pair for water tiles. */
 #define COLOR_TILDES      8
 
+/** @brief Terminal prompt string used when prompting the player to fly. */
+#define FLY_COMMAND_MESSAGE "Fly to (x y)? "
+
 /**
  * @brief Represents a single tile on the map.
  *
- * Stores the tile's grid position and the terrain character used to render it.
+ * Stores the tile's grid position, its terrain character, and weight metric trackers
+ * used primarily during pathfinding calculations.
  */
 typedef struct Tile {
-    int  x;        /**< Column index of the tile (0-based). */
-    int  y;        /**< Row index of the tile (0-based).    */
-    char terrain;  /**< Terrain character (see render-character constants). */
-    int distances;
-    struct Tile* predcessors;
-    int visted;
+    int  x;                     /**< Column index of the tile (0-based). */
+    int  y;                     /**< Row index of the tile (0-based).    */
+    char terrain;               /**< Terrain character (see render-character constants). */
+    int distances;              /**< Cost or distance metric used during pathfinding. */
+    int visted;                 /**< Flag tracking whether this tile has been visited (1) or not (0). */
+    struct Tile* predcessors;   /**< Pointer to the parent tile in the calculated path sequence. */
 } Tile;
 
 #endif /* CONSTANTS_H */

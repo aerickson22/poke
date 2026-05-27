@@ -1,3 +1,43 @@
+commit 7f142a961640d1d235e38575aa0cf369967bb504 (HEAD -> 3-implement-world-generation, origin/3-implement-world-generation)
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Wed May 27 15:40:12 2026 -0500
+
+    added fly command and more memeory clean up
+
+commit ce234e39af554c65dbf8ae7c19dc868b333a0b6b
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Wed May 27 13:23:06 2026 -0500
+
+    restarted 1.02 added world_generation and clean up memeory
+
+commit 595ed9d7441f3b43d984819af1d3006387ea675b
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Wed May 20 16:04:12 2026 -0500
+
+    refactor pathing to be paramterized for world gen
+
+commit 80e2260d15da0639e634a7fa3ca4c7bcae265427 (HEAD -> 3-implement-world-generation, tag: Ver1.01, origin/main, origin/3-implement-world-generation)
+Merge: 666a58b 4906464
+Author: aerickson22 <aerick22@iastate.edu>
+Date:   Tue May 19 16:47:10 2026 -0500
+
+    Merge pull request #2 from aerickson22/1-implement-map-generation
+
+    1 implement map generation
+
+commit 4906464a7eb92fa444c8a45c2b94f3447d531ea1 (origin/1-implement-map-generation, 1-implement-map-generation)
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Tue May 19 16:45:39 2026 -0500
+
+    added path thicken and placing buildings
+
+commit 97ff99d4507c00182d12eb21889f958544620f68
+Author: Alex Erickson <aerick22@iastate.edu>
+Date:   Tue May 19 16:22:40 2026 -0500
+
+    added path genereation
+
+
 commit d8c87cb71b98a112cd9362309614622bed0cb6ca (HEAD -> 1-implement-map-generation, origin/1-implement-map-generation)
 Author: Alex Erickson <aerick22@iastate.edu>
 Date:   Mon May 18 22:10:11 2026 -0500

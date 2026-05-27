@@ -5,7 +5,7 @@
 #include <ncurses.h>
 
 #include "Constants.h"
-#include "map_generation.h"
+#include "world_generation.h"
 
 int main(){
     initscr();
@@ -23,15 +23,38 @@ int main(){
     init_pair(COLOR_TILDES,     COLOR_CYAN,    COLOR_BLACK);
     srand(time(NULL));
 
-    map_t* map;
-    if(!(map = map_init())){
-        fprintf(stderr, "ERROR: MAP INIT FAILED\n");
+    world_t* world;
+    if(!(world = world_init())){
+        fprintf(stderr, "ERROR: WORLD INIT FAILED\n");
         return ERROR;
     }
-    map_generation(map);
-    map_display(map);
-    while(getch() != 27);
-    map_destroy(map);
+    world_display_current_map(world, 'N');
+    int choice;
+    char direction = 'N';
+    int running_game = 1;
+    while(running_game){
+        choice = getch();
+        switch(choice){
+            case KEY_UP:
+                direction = 'N';
+                break;
+            case KEY_DOWN:
+                direction = 'S';
+                break;
+            case KEY_LEFT:
+                direction = 'W';
+                break;
+            case KEY_RIGHT:
+                direction = 'E';
+                break;
+        }
+        if(world_move_map(world, choice) >= 0){
+            world_display_current_map(world, direction);
+        }else{
+            running_game = 0;
+            world_destroy(world);
+        }
+    }
     endwin();
     return 0;
 }

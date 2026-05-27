@@ -14,13 +14,8 @@ struct vec{
     double y;
 };
 
-struct map_t{
-    Tile** data;
-    Tile* exits;
-};
-
-struct map_t* map_init() {
-    struct map_t* out;
+map_t* map_init() {
+    map_t* out;
     if (!(out = malloc(sizeof(*out)))) {
         return NULL;
     }
@@ -36,12 +31,6 @@ struct map_t* map_init() {
             return NULL;
         }
     }
-    if (!(out->exits = malloc(sizeof(Tile) * NUMBER_OF_EXITS))) {
-        for (int i = 0; i < MAP_MAX_Y; i++) free(out->data[i]);
-        free(out->data);
-        free(out);
-        return NULL;
-    }
     for (int i = 0; i < MAP_MAX_Y; i++) {
         for (int j = 0; j < MAP_MAX_X; j++) {
             out->data[i][j].x = j;
@@ -56,17 +45,16 @@ struct map_t* map_init() {
     return out;
 }
 
-int map_destroy(struct map_t* in){
+int map_destroy(map_t* in){
     for(int i = 0; i < MAP_MAX_Y; i++){
         free(in->data[i]);
     }
     free(in->data);
-    free(in->exits);
     free(in);
     return SUCCESS;
 }
 
-void map_display(struct map_t* in){
+void map_display(map_t* in){
     for(int i = 0; i < MAP_MAX_Y; i++){
         for(int j = 0; j < MAP_MAX_X; j++){
             switch(in->data[i][j].terrain){
@@ -215,7 +203,7 @@ char biome(double elevation, double moisture) {
     return BOULDER;
 }
 
-void _draw_borders(struct map_t* in){
+void _draw_borders(map_t* in){
     for (int i = 0; i < MAP_MAX_Y; i++) {
         for (int j = 0; j < MAP_MAX_X; j++) {
             if(!i || !j || i == (MAP_MAX_Y - 1) || j == (MAP_MAX_X - 1)){
@@ -249,7 +237,7 @@ int _distance_to(char dest){
     }
 }
 
-void _thicken_paths(struct map_t* in) {
+void _thicken_paths(map_t* in) {
     int is_path[MAP_MAX_Y][MAP_MAX_X] = {0};
     int placed_mart = 0;
     int placed_center = 0;
@@ -301,12 +289,9 @@ void _thicken_paths(struct map_t* in) {
     }
 }
 
-int  _draw_vertical(struct map_t* in){
-    int start = (rand() % (MAP_MAX_X - 3)) + 3;
-    Tile* src = &in->data[MAP_MAX_Y - 1][start];
+int _dijkstra_pathing(map_t* in, Tile* src, Tile* dest){
     src->distances = 0;
     src->terrain = PATH;
-    Tile* dest = &in->data[0][start];
     dest->terrain = PATH;
     minheap_t* tiles;
     int dx[8] = {-1,  0,  1, -1, 1, -1, 0, 1};
@@ -319,12 +304,14 @@ int  _draw_vertical(struct map_t* in){
         return ERROR;
     }
     while (!minheap_is_empty(tiles)) {
-        if (!(src = *(Tile**)minheap_remove(tiles, _compare_tiles))) {
+        void* removed = minheap_remove(tiles, _compare_tiles);
+        if (!removed) {
             minheap_destroy(tiles);
             return ERROR;
         }
+        src = *(Tile**)removed;
+        free(removed);
         src->visted = 1;
-
         if (src->x == dest->x && src->y == dest->y) {
             while(src->predcessors){
                 src->terrain = PATH;
@@ -357,63 +344,7 @@ int  _draw_vertical(struct map_t* in){
     return SUCCESS;
 }
 
-int _draw_horizontal(struct map_t* in){
-    int start = (rand() % (MAP_MAX_Y - 3)) + 3;
-    Tile* src = &in->data[start][0];
-    src->distances = 0;
-    src->terrain = PATH;
-    Tile* dest = &in->data[start][MAP_MAX_X - 1];
-    dest->terrain = PATH;
-    minheap_t* tiles;
-    int dx[8] = {-1,  0,  1, -1, 1, -1, 0, 1};
-    int dy[8] = {-1, -1, -1,  0, 0,  1, 1, 1};
-    if(!(tiles = minheap_init(sizeof(src)))){
-        return ERROR;
-    }
-    if(minheap_insert(&src, tiles, _compare_tiles) < 0){
-        minheap_destroy(tiles);
-        return ERROR;
-    }
-    while (!minheap_is_empty(tiles)) {
-        if (!(src = *(Tile**)minheap_remove(tiles, _compare_tiles))) {
-            minheap_destroy(tiles);
-            return ERROR;
-        }
-        src->visted = 1;
-
-        if (src->x == dest->x && src->y == dest->y) {
-            while(src->predcessors){
-                src->terrain = PATH;
-                src = src->predcessors;
-            }
-            minheap_destroy(tiles);
-            return SUCCESS;
-        }
-        for (int i = 0; i < 8; i++) {
-            if (!(src->y + dy[i] < 0 || src->y + dy[i] >= MAP_MAX_Y ||
-                src->x + dx[i] < 0 || src->x + dx[i] >= MAP_MAX_X ||
-                in->data[src->y + dy[i]][src->x + dx[i]].visted)) {
-                Tile* neighbor = &in->data[src->y + dy[i]][src->x + dx[i]];
-                int dist = _distance_to(neighbor->terrain);
-                if (dist != INT_MAX) {
-                    int new_dist = src->distances + dist;
-                    if (new_dist < neighbor->distances) {
-                        neighbor->distances = new_dist;
-                        neighbor->predcessors = src;
-                        if (minheap_insert(&neighbor, tiles, _compare_tiles) < 0) {
-                            minheap_destroy(tiles);
-                            return ERROR;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    minheap_destroy(tiles);
-    return SUCCESS;
-}
-
-void _reset_tiles(struct map_t* in) {
+void _reset_tiles(map_t* in) {
     for (int y = 0; y < MAP_MAX_Y; y++) {
         for (int x = 0; x < MAP_MAX_X; x++) {
             in->data[y][x].visted = 0;
@@ -423,19 +354,83 @@ void _reset_tiles(struct map_t* in) {
     }
 }
 
-int _draw_paths(struct map_t* in) {
-    if (_draw_vertical(in) < 0){
+int _draw_paths(map_t* in, Tile* start_x, Tile* start_y) {
+    int rand_x = (rand() % (MAP_MAX_X - 3)) + 3;
+    int rand_y = (rand() % (MAP_MAX_Y - 3)) + 3;
+    Tile* ver_src = NULL, *ver_dest = NULL, *hor_src = NULL, *hor_dest = NULL;
+
+    if (start_y) {
+        if (start_y->y == 0) {
+            ver_src = &in->data[MAP_MAX_Y - 1][start_y->x];
+            ver_dest = &in->data[0][rand_x];
+        } else {
+            ver_src = &in->data[0][start_y->x];
+            ver_dest = &in->data[MAP_MAX_Y - 1][rand_x];
+        }
+    } else {
+        ver_src = &in->data[0][rand_x];
+        ver_dest = &in->data[MAP_MAX_Y - 1][rand_x];
+    }
+
+    if (start_x) {
+        if (start_x->x == 0) {
+            hor_src = &in->data[start_x->y][MAP_MAX_X - 1];
+            hor_dest = &in->data[rand_y][0];
+        } else {
+            hor_src = &in->data[start_x->y][0];
+            hor_dest = &in->data[rand_y][MAP_MAX_X - 1];
+        }
+    } else {
+        hor_src = &in->data[rand_y][0];
+        hor_dest = &in->data[rand_y][MAP_MAX_X - 1];
+    }
+
+    if (_dijkstra_pathing(in, ver_src, ver_dest) < 0){
         return ERROR;
     }
     _reset_tiles(in);
-    if (_draw_horizontal(in) < 0){
+    if (_dijkstra_pathing(in, hor_src, hor_dest) < 0){
         return ERROR;
     }
     _thicken_paths(in);
     return SUCCESS;
 }
 
-int map_generation(struct map_t* in) {
+Tile* map_get_exit(map_t* in, int direction){
+    switch(direction){
+        case 'n':
+            for(int i = 0; i < MAP_MAX_X; i++){
+                if(in->data[0][i].terrain == PATH){
+                    return &in->data[0][i];
+                }
+            }
+            break;
+        case 's':
+            for(int i = 0; i < MAP_MAX_X; i++){
+                if(in->data[MAP_MAX_Y - 1][i].terrain == PATH){
+                    return &in->data[MAP_MAX_Y - 1][i];
+                }
+            }
+            break;
+        case 'e':
+            for(int i = 0; i < MAP_MAX_Y; i++){
+                if(in->data[i][MAP_MAX_X - 1].terrain == PATH){
+                    return &in->data[i][MAP_MAX_X - 1];
+                }
+            }
+            break;
+        case 'w':
+            for(int i = 0; i < MAP_MAX_Y; i++){
+                if(in->data[i][0].terrain == PATH){
+                    return &in->data[i][0];
+                }
+            }
+            break;
+    }
+    return NULL;
+}
+
+int map_generation(map_t* in, Tile* exit_x, Tile* exit_y) {
     int* perms;
     if (!(perms = _permutations())){
         return ERROR;
@@ -458,7 +453,7 @@ int map_generation(struct map_t* in) {
     free(perms);
     free(perms2);
     _draw_borders(in);
-    _draw_paths(in);
+    _draw_paths(in, exit_x, exit_y);
     return SUCCESS;
 }
 

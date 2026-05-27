@@ -1,6 +1,7 @@
 #ifndef MINHEAP_H
 #define MINHEAP_H
 
+#include <stdio.h>
 #include <stddef.h>
 
 /**
@@ -91,5 +92,19 @@ void* minheap_remove(minheap_t* in, int(*compare)(void* x, void* y));
  * @return    Pointer to the minimum element, or NULL if the heap is empty.
  */
 void* minheap_peek(minheap_t* in);
+
+/**
+ * @brief Applies a function to every element in the heap.
+ *
+ * Iterates over all elements in the heap's internal buffer in
+ * storage order (not sorted order) and calls `function` on each.
+ * The function receives a pointer directly into the heap's internal
+ * buffer; do not free it or store it beyond the call.
+ *
+ * @param in        Target heap.
+ * @param function  Function to apply to each element. Receives a
+ *                  pointer to the element in the internal buffer.
+ */
+void minheap_do_something(minheap_t* in, void(*function)(void*));
 
 #endif
