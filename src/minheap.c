@@ -70,15 +70,10 @@ void _heapify_down(struct minheap_t* in, int(*compare)(void*, void*)){
         if(compare(in->data + (index * in->data_size), in->data + (smaller_child_index * in->data_size)) < 0){
             break;
         }else{
-            char* temp;
-            if(!(temp = malloc(in->data_size))){
-                fprintf(stderr, "ERROR fail to allocate temp");
-                return;
-            }
+            char temp[in->data_size];
             memcpy(temp, in->data + (index * in->data_size), in->data_size);
             memcpy(in->data + (index * in->data_size), in->data + (smaller_child_index * in->data_size), in->data_size);
             memcpy(in->data + (smaller_child_index * in->data_size), temp, in->data_size);
-            free(temp);
         }
         index = smaller_child_index;
     }
@@ -87,15 +82,10 @@ void _heapify_down(struct minheap_t* in, int(*compare)(void*, void*)){
 void _sift_up(struct minheap_t* in, int(*compare)(void*, void*)){
     int index = in->size - 1;
     while(_has_parent(index) && compare(in->data + (index * in->data_size), in->data + (_parent_index(index) * in->data_size)) < 0){
-        char* temp;
-        if(!(temp = malloc(in->data_size))){
-            fprintf(stderr, "ERROR fail to allocate temp");
-            return;
-        }
+        char temp[in->data_size];
         memcpy(temp, in->data + (_parent_index(index) * in->data_size), in->data_size);
         memcpy(in->data + (_parent_index(index) * in->data_size), in->data + (index * in->data_size), in->data_size);
         memcpy(in->data + (index * in->data_size), temp, in->data_size);
-        free(temp);
         index = _parent_index(index);
     }
 }
@@ -131,7 +121,10 @@ int minheap_is_empty(struct minheap_t* in){
 
 int minheap_insert(void* item, struct minheap_t* in, int(*compare)(void* x, void* y)){
     if(in->size >= in->capacity){
-        _resize(in->capacity * 2, in);
+        if(_resize(in->capacity * 2, in) < 0){
+            fprintf(stderr, "ERROR: FAILED TO RESIZE MIN HEAP");
+            return ERROR;
+        };
     }
     memcpy(in->data + (in->size * in->data_size), item, in->data_size);
     in->size++;
@@ -162,4 +155,10 @@ void* minheap_peek(struct minheap_t* in){
         return NULL;
     }
     return in->data + (0 * in->data_size);
+}
+
+void minheap_do_something(struct minheap_t* in, void(*function)(void*)){
+    for(size_t i = 0; i < in->size; i++){
+        function(in->data + ((in->data_size) * i));
+    }
 }

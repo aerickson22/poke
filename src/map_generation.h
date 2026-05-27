@@ -1,6 +1,8 @@
 #ifndef MAP_GENERATION_H
 #define MAP_GENERATION_H
 
+#include "Constants.h"
+
 /**
  * @file map_generation.h
  * @brief Public interface for map creation, terrain generation, and rendering.
@@ -12,7 +14,9 @@
  * The internal layout of map_t is hidden from callers. Interact with it
  * exclusively through the functions declared in this header.
  */
-typedef struct map_t map_t;
+typedef struct map_t{
+    Tile** data;
+}map_t;
 
 /**
  * @brief Renders the map to the terminal using ncurses.

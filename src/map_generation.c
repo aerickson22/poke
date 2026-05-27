@@ -14,13 +14,8 @@ struct vec{
     double y;
 };
 
-struct map_t{
-    Tile** data;
-    Tile* exits;
-};
-
-struct map_t* map_init() {
-    struct map_t* out;
+map_t* map_init() {
+    map_t* out;
     if (!(out = malloc(sizeof(*out)))) {
         return NULL;
     }
@@ -36,12 +31,6 @@ struct map_t* map_init() {
             return NULL;
         }
     }
-    if (!(out->exits = malloc(sizeof(Tile) * NUMBER_OF_EXITS))) {
-        for (int i = 0; i < MAP_MAX_Y; i++) free(out->data[i]);
-        free(out->data);
-        free(out);
-        return NULL;
-    }
     for (int i = 0; i < MAP_MAX_Y; i++) {
         for (int j = 0; j < MAP_MAX_X; j++) {
             out->data[i][j].x = j;
@@ -56,17 +45,16 @@ struct map_t* map_init() {
     return out;
 }
 
-int map_destroy(struct map_t* in){
+int map_destroy(map_t* in){
     for(int i = 0; i < MAP_MAX_Y; i++){
         free(in->data[i]);
     }
     free(in->data);
-    free(in->exits);
     free(in);
     return SUCCESS;
 }
 
-void map_display(struct map_t* in){
+void map_display(map_t* in){
     for(int i = 0; i < MAP_MAX_Y; i++){
         for(int j = 0; j < MAP_MAX_X; j++){
             switch(in->data[i][j].terrain){
@@ -215,7 +203,7 @@ char biome(double elevation, double moisture) {
     return BOULDER;
 }
 
-void _draw_borders(struct map_t* in){
+void _draw_borders(map_t* in){
     for (int i = 0; i < MAP_MAX_Y; i++) {
         for (int j = 0; j < MAP_MAX_X; j++) {
             if(!i || !j || i == (MAP_MAX_Y - 1) || j == (MAP_MAX_X - 1)){
@@ -249,7 +237,7 @@ int _distance_to(char dest){
     }
 }
 
-void _thicken_paths(struct map_t* in) {
+void _thicken_paths(map_t* in) {
     int is_path[MAP_MAX_Y][MAP_MAX_X] = {0};
     int placed_mart = 0;
     int placed_center = 0;
@@ -301,7 +289,7 @@ void _thicken_paths(struct map_t* in) {
     }
 }
 
-int _dijkstra_pathing(struct map_t* in, Tile* src, Tile* dest){
+int _dijkstra_pathing(map_t* in, Tile* src, Tile* dest){
     src->distances = 0;
     src->terrain = PATH;
     dest->terrain = PATH;
@@ -316,10 +304,14 @@ int _dijkstra_pathing(struct map_t* in, Tile* src, Tile* dest){
         return ERROR;
     }
     while (!minheap_is_empty(tiles)) {
-        if (!(src = *(Tile**)minheap_remove(tiles, _compare_tiles))) {
+        void* removed = minheap_remove(tiles, _compare_tiles);
+        if (!removed) {
             minheap_destroy(tiles);
             return ERROR;
         }
+        src = *(Tile**)removed;
+        free(removed);
+
         src->visted = 1;
 
         if (src->x == dest->x && src->y == dest->y) {
@@ -354,7 +346,7 @@ int _dijkstra_pathing(struct map_t* in, Tile* src, Tile* dest){
     return SUCCESS;
 }
 
-void _reset_tiles(struct map_t* in) {
+void _reset_tiles(map_t* in) {
     for (int y = 0; y < MAP_MAX_Y; y++) {
         for (int x = 0; x < MAP_MAX_X; x++) {
             in->data[y][x].visted = 0;
@@ -364,7 +356,7 @@ void _reset_tiles(struct map_t* in) {
     }
 }
 
-int _draw_paths(struct map_t* in, Tile* start_x, Tile* start_y) {
+int _draw_paths(map_t* in, Tile* start_x, Tile* start_y) {
     int rand_x = (rand() % (MAP_MAX_X - 3)) + 3;
     int rand_y = (rand() % (MAP_MAX_Y - 3)) + 3;
     Tile* ver_src, *ver_dest, *hor_src, *hor_dest;
@@ -403,7 +395,7 @@ int _draw_paths(struct map_t* in, Tile* start_x, Tile* start_y) {
     return SUCCESS;
 }
 
-int map_generation(struct map_t* in) {
+int map_generation(map_t* in) {
     int* perms;
     if (!(perms = _permutations())){
         return ERROR;

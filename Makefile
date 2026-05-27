@@ -40,4 +40,8 @@ clean:
 # Rebuild
 re: clean all
 
-.PHONY: all clean re
+# Run
+run: all
+	./$(TARGET)
+
+.PHONY: all clean re run

@@ -19,6 +19,9 @@
 /** @brief Maximum number of rows in the map grid. */
 #define MAP_MAX_Y             21
 
+#define WORLD_MAX_X 400
+#define WORLD_MAX_Y 400
+
 /** @brief Width in tiles of a Pokémon Center or Poké Mart building. */
 #define POKEMON_STORE_X_SIZE   2
 
@@ -95,8 +98,8 @@ typedef struct Tile {
     int  y;        /**< Row index of the tile (0-based).    */
     char terrain;  /**< Terrain character (see render-character constants). */
     int distances;
-    struct Tile* predcessors;
     int visted;
+    struct Tile* predcessors;
 } Tile;
 
 #endif /* CONSTANTS_H */
