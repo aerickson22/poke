@@ -432,6 +432,10 @@ Tile* map_get_exit(map_t* in, int direction){
     return NULL;
 }
 
+int _map_character_generation(){
+	return SUCCESS;
+}
+
 int map_generation(map_t* in, Tile* exit_x, Tile* exit_y) {
     int* perms;
     if (!(perms = _permutations())){
