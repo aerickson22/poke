@@ -7,7 +7,7 @@
 
 #include "map_generation.h"
 #include "Constants.h"
-#include "minheap.h"
+#include "min_heap.h"
 
 struct vec{
     double x;
@@ -214,7 +214,9 @@ void _draw_borders(map_t* in){
 }
 
 int _compare_tiles(void* t1, void* t2){
-    return (*(Tile**)t1)->distances - (*(Tile**)t2)->distances;
+    Tile* a = *(Tile**)t1;
+    Tile* b = *(Tile**)t2;
+    return a->distances - b->distances;
 }
 
 int _distance_to(char dest){
@@ -294,17 +296,17 @@ int _dijkstra_pathing(map_t* in, Tile* src, Tile* dest){
     src->terrain = PATH;
     dest->terrain = PATH;
     minheap_t* tiles;
-    int dx[8] = {-1,  0,  1, -1, 1, -1, 0, 1};
+    int dx[8] = {-1, 0,  1, -1, 1, -1, 0, 1};
     int dy[8] = {-1, -1, -1,  0, 0,  1, 1, 1};
-    if(!(tiles = minheap_init(sizeof(src)))){
+    if(!(tiles = minheap_init(sizeof(src), &_compare_tiles))){
         return ERROR;
     }
-    if(minheap_insert(&src, tiles, _compare_tiles) < 0){
+    if(minheap_insert(&src, tiles) < 0){
         minheap_destroy(tiles);
         return ERROR;
     }
     while (!minheap_is_empty(tiles)) {
-        void* removed = minheap_remove(tiles, _compare_tiles);
+        void* removed = minheap_extract_min(tiles);
         if (!removed) {
             minheap_destroy(tiles);
             return ERROR;
@@ -331,7 +333,7 @@ int _dijkstra_pathing(map_t* in, Tile* src, Tile* dest){
                     if (new_dist < neighbor->distances) {
                         neighbor->distances = new_dist;
                         neighbor->predcessors = src;
-                        if (minheap_insert(&neighbor, tiles, _compare_tiles) < 0) {
+                        if (minheap_insert(&neighbor, tiles) < 0) {
                             minheap_destroy(tiles);
                             return ERROR;
                         }
@@ -428,6 +430,10 @@ Tile* map_get_exit(map_t* in, int direction){
             break;
     }
     return NULL;
+}
+
+int _map_character_generation(){
+	return SUCCESS;
 }
 
 int map_generation(map_t* in, Tile* exit_x, Tile* exit_y) {
